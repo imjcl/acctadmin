@@ -45,6 +45,34 @@ end
 class SearchDialog < FXDialogBox
   def initialize(owner)
     super(owner, "Search Users", DECOR_TITLE|DECOR_BORDER|DECOR_RESIZE)
+    search_form
+  end
+
+  def search_form
+    packer = FXPacker.new(self, :opts => LAYOUT_FILL)
+    matrix = FXMatrix.new(packer, 2, opts: MATRIX_BY_COLUMNS|LAYOUT_CENTER_X, padding: 8, vSpacing: 8)
+
+    @name_target = FXDataTarget.new('')
+    @login_target = FXDataTarget.new('')
+    @reg_target = FXDataTarget.new('')
+    
+    FXLabel.new(matrix, 'Name:')
+    name_text = FXTextField.new(matrix, 25, target: @name_target, selector: FXDataTarget::ID_VALUE)
+    
+    FXLabel.new(matrix, 'Login ID:')
+    login_text = FXTextField.new(matrix, 25, target: @login_target, selector: FXDataTarget::ID_VALUE)
+    
+    FXLabel.new(matrix, 'Reg Number:')
+    reg_text = FXTextField.new(matrix, 25, target: @reg_target, selector: FXDataTarget::ID_VALUE)
+
+    buttons = FXHorizontalFrame.new(packer, opts: LAYOUT_CENTER_X|PACK_UNIFORM_HEIGHT|PACK_UNIFORM_WIDTH, hSpacing: 8)
+    cancel_button = FXButton.new(buttons, 'Cancel')
+    clear_button = FXButton.new(buttons, 'Clear')
+    accept_button = FXButton.new(buttons, 'Search')
+
+    @name_target.connect(SEL_COMMAND) do
+      puts "This name is #{@name_target.value}"
+    end
   end
 end
 
