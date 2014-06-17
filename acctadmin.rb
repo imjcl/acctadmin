@@ -112,12 +112,22 @@ class SearchDialog < FXDialogBox
     reg_text = FXTextField.new(matrix, 25, target: @reg_target, selector: FXDataTarget::ID_VALUE)
 
     buttons = FXHorizontalFrame.new(packer, opts: LAYOUT_CENTER_X|PACK_UNIFORM_HEIGHT|PACK_UNIFORM_WIDTH, hSpacing: 8)
-    cancel_button = FXButton.new(buttons, 'Cancel')
+    cancel_button = FXButton.new(buttons, 'Cancel', target: self, selector: FXDialogBox::ID_CANCEL)
     clear_button = FXButton.new(buttons, 'Clear')
     accept_button = FXButton.new(buttons, 'Search')
 
+    clear_button.connect(SEL_COMMAND) do 
+      @name_target.value, @login_target.value, @reg_target.value = ['', '', '']
+    end
+
     accept_button.connect(SEL_COMMAND) do
-      puts "This name is #{@name_target.value}"
+      if @name_target.value.empty? && @login_target.value.empty? && @reg_target.value.empty?
+        FXMessageBox.error(
+          self, MBOX_OK, "Error", "You must search using at least one field.")
+      else
+        search_by = [@name_target.value, @login_target.value, @reg_target.value].select { |val| !val.empty?}
+        puts search_by
+      end 
     end
   end
 end
