@@ -6,6 +6,7 @@ include Fox
 class Acctadmin < FXMainWindow
   def initialize(app)
     super(app, 'Acctadmin', width: 200, height: 200)
+    @app = app
     option_menu
   end
 
@@ -31,7 +32,7 @@ class Acctadmin < FXMainWindow
   end
 
   def launch_search(sender, sel, ptr)
-    SearchDialog.new(self).execute
+    SearchDialog.new(self, @app).execute
     return 1
   end
 end
@@ -83,14 +84,46 @@ class CreateDialog < FXDialogBox
 
     buttons = FXHorizontalFrame.new(packer, opts: LAYOUT_CENTER_X|PACK_UNIFORM_HEIGHT|PACK_UNIFORM_WIDTH, hSpacing: 8)
 
-    FXButton.new(buttons, 'Cancel')
-    FXButton.new(buttons, 'Create')
+    cancel_button = FXButton.new(buttons, 'Cancel', target: self, selector: FXDialogBox::ID_CANCEL)
+    create_button = FXButton.new(buttons, 'Create')
+
+    create_button.connect(SEL_COMMAND) do
+      new_user = {
+                  reg_number: @reg_target.value, 
+                  login_id: @login_target.value, 
+                  name: @name_target.value, 
+                  category: @category_target.value, 
+                  comments: @comment_target.value, 
+                  extragroups: @extragroup_target.value, 
+                  extraalias: @extraalias_target.value, 
+                  ucla_logon: @ucla_logon_target.value
+                }
+
+      # Required fields check
+      required_fields = true
+      [:reg_number, :login_id, :name, :category].each do |field|
+        if new_user[field].empty?
+          FXMessageBox.error(
+          self, MBOX_OK, "Error", "#{field} is a required field.")
+          required_fields = false
+          break
+        end
+      end
+
+      if required_fields
+        puts 'required fields passes...do validation here'
+      else
+        puts 'required fields does not pass, have them revise'
+      end
+
+    end
   end
 end
 
 class SearchDialog < FXDialogBox
-  def initialize(owner)
+  def initialize(owner, app)
     super(owner, "Search Users", DECOR_TITLE|DECOR_BORDER|DECOR_RESIZE)
+    @app = app
     search_form
   end
 
@@ -114,19 +147,21 @@ class SearchDialog < FXDialogBox
     buttons = FXHorizontalFrame.new(packer, opts: LAYOUT_CENTER_X|PACK_UNIFORM_HEIGHT|PACK_UNIFORM_WIDTH, hSpacing: 8)
     cancel_button = FXButton.new(buttons, 'Cancel', target: self, selector: FXDialogBox::ID_CANCEL)
     clear_button = FXButton.new(buttons, 'Clear')
-    accept_button = FXButton.new(buttons, 'Search')
+    accept_button = FXButton.new(buttons, 'Search', target: self)
 
     clear_button.connect(SEL_COMMAND) do 
       @name_target.value, @login_target.value, @reg_target.value = ['', '', '']
     end
 
-    accept_button.connect(SEL_COMMAND) do
+    accept_button.connect(SEL_COMMAND) do |sender, selector, data|
       if @name_target.value.empty? && @login_target.value.empty? && @reg_target.value.empty?
         FXMessageBox.error(
           self, MBOX_OK, "Error", "You must search using at least one field.")
       else
         search_by = [@name_target.value, @login_target.value, @reg_target.value].select { |val| !val.empty?}
         puts search_by
+        close
+        @app.stopModal
       end 
     end
   end
