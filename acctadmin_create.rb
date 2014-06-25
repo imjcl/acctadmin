@@ -1,4 +1,6 @@
 require 'fox16'
+require_relative "user"
+
 include Fox
 
 class CreateDialog < FXDialogBox
@@ -75,9 +77,17 @@ class CreateDialog < FXDialogBox
       end
 
       if required_fields
-        puts 'required fields passes...do validation here'
-      else
-        puts 'required fields does not pass, have them revise'
+        user = User.new(new_user)
+        op = user.create
+        unless op == true
+          FXMessageBox.error(
+          self, MBOX_OK, "Error", "Error, #{op}")
+          required_fields = false
+        else
+          # Need to put some sort of confirmation here with the listing of the additional info that's been created / that can be altered...          
+          app.stopModal
+          self.close
+        end
       end
     end
   end
