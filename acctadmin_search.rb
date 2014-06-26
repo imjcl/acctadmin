@@ -85,7 +85,7 @@ class SearchResults < FXDialogBox
 
     footer = FXHorizontalFrame.new(packer, opts: LAYOUT_CENTER_X|PACK_UNIFORM_HEIGHT|PACK_UNIFORM_WIDTH, hSpacing: 8)
 
-    quit_button = FXButton.new(footer, 'Quit')
+    quit_button = FXButton.new(footer, 'Done')
     quit_button.connect(SEL_COMMAND) do 
       app.stopModal
       self.close
@@ -104,7 +104,8 @@ class TestButton < FXButton
 
   def connect(signal)
     super(signal) do |sender, selector, data|
-     puts User::query_by_login @id 
+     info = User::query_by_login @id
+     EditDialog.new(@app, info).execute
     end
   end
 end
