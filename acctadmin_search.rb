@@ -63,6 +63,7 @@ class SearchResults < FXDialogBox
   def initialize owner, search_values
     super(owner, "Search Users", DECOR_TITLE|DECOR_BORDER|DECOR_RESIZE)
 
+    @app = owner
     @results = User::search(search_values)
     display_results
   end
@@ -79,7 +80,7 @@ class SearchResults < FXDialogBox
       FXLabel.new(matrix, row["name"])
       FXLabel.new(matrix, row["login_id"])
       FXLabel.new(matrix, row["category"])
-      TestButton.new(row["login_id"], matrix, "Edit", nil).connect(SEL_COMMAND)
+      TestButton.new(@app, row["login_id"], matrix, "Edit", nil).connect(SEL_COMMAND)
     end
 
     footer = FXHorizontalFrame.new(packer, opts: LAYOUT_CENTER_X|PACK_UNIFORM_HEIGHT|PACK_UNIFORM_WIDTH, hSpacing: 8)
@@ -95,8 +96,9 @@ end
 
 
 class TestButton < FXButton 
-  def initialize(a, *params)    
+  def initialize(app, a, *params)    
     super(*params)
+    @app = app
     @id = a
   end
 
