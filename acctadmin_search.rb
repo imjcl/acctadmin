@@ -1,4 +1,6 @@
 require 'fox16'
+#require_relative 'user'
+
 include Fox
 
 class SearchDialog < FXDialogBox
@@ -39,15 +41,19 @@ class SearchDialog < FXDialogBox
         FXMessageBox.error(
           self, MBOX_OK, "Error", "You must search using at least one field.")
       else
-        @search_values = [@name_target.value, @login_target.value, @reg_target.value].select { |val| !val.empty?}
+        @search_values = {
+          name: @name_target.value, 
+          login_id: @login_target.value, 
+          reg_number: @reg_target.value
+        }.select { |k, val| !val.empty?}
         run_search 
       end 
     end
   end
 
   def run_search
+    app.stopModal
     close
-    @app.stopModal
     SearchResults.new(@app, @search_values).execute
     return 1
   end
@@ -56,7 +62,47 @@ end
 class SearchResults < FXDialogBox
   def initialize owner, search_values
     super(owner, "Search Users", DECOR_TITLE|DECOR_BORDER|DECOR_RESIZE)
-    puts search_values
+
+    @results = User::search(search_values)
+    display_results
   end
 
+  def display_results
+    packer = FXPacker.new(self, :opts => LAYOUT_FILL)
+    header = FXHorizontalFrame.new(packer, opts: LAYOUT_CENTER_X|PACK_UNIFORM_HEIGHT|PACK_UNIFORM_WIDTH, hSpacing: 8)
+
+    FXLabel.new(header, "Results: #{@results.count}")
+
+    matrix = FXMatrix.new(packer, 4, opts: MATRIX_BY_COLUMNS|LAYOUT_CENTER_X, padding: 8, vSpacing: 8)
+
+    @results.each do |row|
+      FXLabel.new(matrix, row["name"])
+      FXLabel.new(matrix, row["login_id"])
+      FXLabel.new(matrix, row["category"])
+      TestButton.new(row["login_id"], matrix, "Edit", nil).connect(SEL_COMMAND)
+    end
+
+    footer = FXHorizontalFrame.new(packer, opts: LAYOUT_CENTER_X|PACK_UNIFORM_HEIGHT|PACK_UNIFORM_WIDTH, hSpacing: 8)
+
+    quit_button = FXButton.new(footer, 'Quit')
+    quit_button.connect(SEL_COMMAND) do 
+      app.stopModal
+      self.close
+    end
+    
+  end
+end
+
+
+class TestButton < FXButton 
+  def initialize(a, *params)    
+    super(*params)
+    @id = a
+  end
+
+  def connect(signal)
+    super(signal) do |sender, selector, data|
+     puts User::query_by_login @id 
+    end
+  end
 end

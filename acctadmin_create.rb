@@ -1,5 +1,5 @@
 require 'fox16'
-require_relative "user"
+#require_relative "user"
 
 include Fox
 

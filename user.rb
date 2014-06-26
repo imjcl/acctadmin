@@ -36,6 +36,44 @@ class User
       stm.close if stm
       db.close if db
     end
+  end
 
+  def self.search values
+    clause = ''
+    values.each do |k, v|
+      if clause.empty?
+        clause += "WHERE #{k} LIKE '%#{v}%'"
+      else
+        clause += " AND #{k} LIKE '%#{v}%'"
+      end
+    end
+
+    begin
+      db = SQLite3::Database.new "test.db"
+      db.results_as_hash = true
+
+      hsh = db.execute "SELECT * FROM user #{clause}"
+      
+    rescue SQLite3::Exception => e
+      puts "Exception occurred"
+      puts e
+    ensure
+      db.close if db
+    end
+  end
+
+  def self.query_by_login login_id
+    begin
+      db = SQLite3::Database.new "test.db"
+      db.results_as_hash = true
+
+      hsh = db.execute "SELECT * FROM user WHERE login_id = '#{login_id}'"
+      
+    rescue SQLite3::Exception => e
+      puts "Exception occurred"
+      puts e
+    ensure
+      db.close if db
+    end    
   end
 end

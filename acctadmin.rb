@@ -3,6 +3,7 @@
 require 'fox16'
 require_relative 'acctadmin_create'
 require_relative 'acctadmin_search'
+require_relative 'user'
 
 include Fox
 
